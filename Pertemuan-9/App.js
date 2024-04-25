@@ -1,119 +1,99 @@
-/**
- * Pada program ini, membuat aplikasi React Native sistem CRUD emnggunakan Axios.
- */
+import { useState, useEffect } from 'react';
+import { StyleSheet, View, Text, TextInput, Button, TouchableOpacity, ScrollView} from 'react-native';
+import axios from 'axios';
 
-import { useState, useEffect } from "react"
-import { StyleSheet, View, Text, TextInput, TouchableOpacity, ScrollView, Button, SafeAreaView } from "react-native"
-import axios from 'axios'
+export default function App () {
+  const [firstName, setFirstName] = useState('');
+  const [lastName,setLastName] = useState('');
+  const [selectedUserId, setSelectedUserId] = useState(null);
+  const [users, setUsers] = useState([]);
 
-const App = () => {
-
-  const [firstName, setFirstName] = useState("")
-  const [lastName, setLastName] = useState("")
-  const [selectedUserId, setSelectedUserId] = useState(null)
-  const [users, setUsers] = useState([])
-
-  // mengambil data dari API
+  //ambil data dr API
   const fetchData = async () => {
     try {
-      const result = await axios.get('https://hendi-hermawan.com/pemrograman-bergerak-api.php')
-      setUsers(result.data)
+      const result = await axios.get('https://hendi-hermawan.com/pemrograman-bergerak-api.php');
+      setUsers(result.data);
     } catch (error) {
-      console.error('Failed to Fetch User', error)
+      console.error('Failed to Fetch User', error);
     }
   }
 
-  useEffect(
-    () => {
-      fetchData()
-    }, []
-  )
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   const handleAddorUpdate = async () => {
 
   }
-
+  const handleDelete = async (id) => {
+    try {
+      await axios.delete('https://hendi-hermawan.com/pemrograman-bergerak-api.php',
+      {data: { id }}
+      );
+      fetchData();
+    } catch (error) {
+      console.error('Failed to delete user:',error);
+    }
+  }
   return (
     <View style={styles.container}>
       <View>
-        <TextInput
-          style={styles.inputText}
-          placeholder="Nama Depan"
-          value={firstName}
-          onChangeText={setFirstName}
-        />
-        <TextInput
-          style={styles.inputText}
-          placeholder="Nama Belakang"
-          value={lastName}
-          onChangeText={setLastName}
-        />
-        <TouchableOpacity style={styles.btnStyle}>
-          <Button
-            title={selectedUserId ? 'Update User' : 'Add User'}
-            onPress={handleAddorUpdate}
-          />
-        </TouchableOpacity>
+        <TextInput style={styles.input} placeholder="Nama Depan" value={firstName} onChangeText={setFirstName} />
+        <TextInput style={styles.input} placeholder="Nama Belakang" value={lastName} onChangeText={setLastName} />
+        <Button title={selectedUserId ? 'Update User' : 'Add User'} onPress={handleAddorUpdate}/>
       </View>
-
-
       <ScrollView>
         {users.map((user) => (
-        <View style={styles.userContainer}>
-          <Text>Testing</Text>
-          <View style={styles.inputData}>
-            <TouchableOpacity style={styles.inputUser}>
-              <Text style={styles.userText}>Edit</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.inputUser}>
-              <Text>Delete</Text>
-            </TouchableOpacity>
-          </View>
+        <View key={user.id} style={styles.userContainer}>
+          <Text style={styles.userText}>{user.first_name} {user.last_name}</Text>
+          <TouchableOpacity 
+          style={styles.button}
+          onPress={() => {
+            setSelectedUserId(user.id);
+            setFirstName(user.first_name);
+            setLastName(user.last_name);
+          }}
+          >
+            <Text>Edit</Text>
+          </TouchableOpacity>
+          <TouchableOpacity 
+          style={styles.button}
+          onPress={()=> handleDelete(user.id)}
+          >
+            <Text>Delete</Text>
+          </TouchableOpacity>
         </View>
         ))}
       </ScrollView>
     </View>
   )
 }
-
-const styles = StyleSheet.create({
+const styles = StyleSheet.create ({
   container: {
-    marginTop: 100,
     flex: 1,
     padding: 20,
+    backgroundColor: '#fff',
   },
-  inputText: {
-    alignSelf: 'center',
-    width: 350,
+  input: {
     height: 40,
-    marginBottom: 10,
+    borderColor:'gray',
     borderWidth: 1,
-    padding: 10,
+    marginBottom: 10,
+    paddingHorizontal: 10,
   },
   userContainer: {
-    flexDirection: 'row',
+    flexDirection:'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    marginVertical: 10
+    alignItems:'center',
+    marginVertical: 10,
   },
   userText: {
     flex: 1,
   },
-  btnStyle: {
-    width: 350,
-    alignSelf: 'center',
-    marginBottom: 20
-  },
-  inputUser: {
+  button: {
     marginLeft: 10,
     padding: 10,
-    backgroundColor: '#ddd',
-    borderRadius: 5
+    backgroundColor:'#ddd',
+    borderRadius: 5,
   },
-  inputData: {
-    flexDirection: 'row'
-  }
-
-})
-
-export default App
+});
